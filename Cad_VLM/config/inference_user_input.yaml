@@ -7,7 +7,7 @@ text_encoder:
     # Maximum Text Sequence Length
     max_seq_len: 512
     # Cache Directory
-    cache_dir: "../../cache"
+    cache_dir: "../cache"
 
   # ----------------- Configuration for the Adaptive Layer ----------------- #
   adaptive_layer:
@@ -45,7 +45,7 @@ test:
   # Prefetch factor for the DataLoader during inference
   prefetch_factor: 10
   # Directory for logging inference information
-  log_dir: "../../outputs"
+  log_dir: "../outputs"
   # Path to saved model checkpoint (optional)
   checkpoint_path: "../trained/Text2CAD_1.0.pth"
   nucleus_prob: 0
