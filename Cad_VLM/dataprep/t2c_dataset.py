@@ -8,7 +8,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 import pickle
 
-class NL2CAD_Dataset(Dataset):
+class Text2CAD_Dataset(Dataset):
     def __init__(
         self,
         cad_seq_dir: str,
@@ -16,6 +16,7 @@ class NL2CAD_Dataset(Dataset):
         split_filepath: str,
         subset: str,
         max_workers: int,
+        debug: bool = False,
     ):
         """
         Args:
@@ -24,51 +25,79 @@ class NL2CAD_Dataset(Dataset):
             split_filepath (string): Train_Test_Val json file path.
             subset (string): "train", "test" or "val"
         """
-        super(NL2CAD_Dataset, self).__init__()
+        super(Text2CAD_Dataset, self).__init__()
         self.cad_seq_dir = cad_seq_dir
         self.prompt_path = prompt_path
-        self.prompt_df = pd.read_pickle(prompt_path)
-        self.prompt_df = self.prompt_df[
-            self.prompt_df["abstract"].notnull()
-            & self.prompt_df["beginner"].notnull()
-            & self.prompt_df["intermediate"].notnull()
-            & self.prompt_df["expert"].notnull()
-        ]
         self.all_prompt_choices = ["abstract", "beginner", "intermediate", "expert"]
         self.substrings_to_remove = ["*", "\n", '"', "\_", "\\", "\t", "-", ":"]
+        
         # open spilt json
         with open(os.path.join(split_filepath), "r") as f:
             self.split = json.load(f)
 
         self.uid_pair = self.split[subset]
+        if debug:
+            self.uid_pair = self.uid_pair[:10] # Limit to 10 samples in debug mode
+
+        self.prompt_data = {}
+        self.keys = []
+
+        try:
+            data = pd.read_pickle(prompt_path)
+            if isinstance(data, dict):
+                # It's already the pre-processed prompt_data!
+                self.prompt_data = data
+                self.keys = list(self.prompt_data.keys())
+                if debug:
+                    self.keys = self.keys[:10]
+                print(f"Found {len(self.keys)} samples for {subset} split (loaded from dict).")
+                return
+            
+            self.prompt_df = data
+            self.prompt_df = self.prompt_df[
+                self.prompt_df["abstract"].notnull()
+                & self.prompt_df["beginner"].notnull()
+                & self.prompt_df["intermediate"].notnull()
+                & self.prompt_df["expert"].notnull()
+            ]
+        except (MemoryError, KeyError) as e:
+            if debug:
+                print(f"Error caught while loading {prompt_path}: {type(e).__name__}. Creating mock data for debug mode.")
+                # Create mock data
+                import numpy as np
+                mock_cad_vec = torch.zeros((10, 2)) # Mock shape
+                mock_mask = {"mask": torch.ones(10)}
+                for uid in self.uid_pair:
+                    for choice in self.all_prompt_choices:
+                        key = f"{uid}_{choice}"
+                        self.prompt_data[key] = (mock_cad_vec, f"Mock {choice} prompt for {uid}", mock_mask)
+                self.keys = list(self.prompt_data.keys())
+                print(f"Found {len(self.keys)} samples for {subset} split (Mock mode).")
+                return
+            else:
+                raise
+
         func = self._prepare_data
         
-        # if os.path.exists(f"{subset}_data.pkl"):
-        #     # Load the prompt data from the pickle file
-        #     with open(f"{subset}_data.pkl",'rb') as f:
-        #         self.prompt_data = pickle.load(f)
-        # else:
-        #     # Load the prompt data using ThreadPoolExecutor and _prepare_data function
-        #     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        #         # Create a dictionary to store the prompt data
-        #         self.prompt_data = {}
-        #         # Use ThreadPoolExecutor to process the prompt data in parallel
-        #         for data in tqdm(
-        #             executor.map(func, self.uid_pair),
-        #             total=len(self.uid_pair),
-        #             desc=f"Loading {subset} split",
-        #         ):
-        #             if data is not None:
-        #                 uid, cad_vec, prompt, mask_cad_dict = data
-        #                 if isinstance(prompt, dict):
-        #                     for key, val in prompt.items():
-        #                         self.prompt_data[uid + f"_{key}"] = (
-        #                             cad_vec,
-        #                             val,
-        #                             mask_cad_dict,
-        #                         )  # "0000/00001234" -> "0000/00001234_beginner"
+        # Load the prompt data using ThreadPoolExecutor and _prepare_data function
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Use ThreadPoolExecutor to process the prompt data in parallel
+            for data in tqdm(
+                executor.map(func, self.uid_pair),
+                total=len(self.uid_pair),
+                desc=f"Loading {subset} split",
+            ):
+                if data is not None:
+                    uid, cad_vec, prompt, mask_cad_dict = data
+                    if isinstance(prompt, dict):
+                        for key, val in prompt.items():
+                            self.prompt_data[uid + f"_{key}"] = (
+                                cad_vec,
+                                val,
+                                mask_cad_dict,
+                            )  # "0000/00001234" -> "0000/00001234_beginner"
 
-        # self.keys = list(self.prompt_data.keys())
+        self.keys = list(self.prompt_data.keys())
         print(f"Found {len(self.prompt_data)} samples for {subset} split.")
 
     def __len__(self):
@@ -78,19 +107,24 @@ class NL2CAD_Dataset(Dataset):
         root_id, chunk_id = uid.split("/")
         if len(self.prompt_df[self.prompt_df["uid"] == uid]) == 0:
             return None
-        cad_vec_dict = torch.load(
-            os.path.join(self.cad_seq_dir, root_id, chunk_id, "seq", f"{chunk_id}.pth"),
-            weights_only=True,
-        )
+        try:
+            cad_vec_dict = torch.load(
+                os.path.join(self.cad_seq_dir, root_id, chunk_id, "seq", f"{chunk_id}.pth"),
+                weights_only=True,
+            )
+        except Exception as e:
+            # print(f"Error loading CAD seq for {uid}: {e}")
+            return None
+            
         level_data = {}
         for prompt_choice in self.all_prompt_choices:
             prompt = self.prompt_df[self.prompt_df["uid"] == uid][prompt_choice].iloc[0]
             if isinstance(prompt, str):
-                level_data[prompt_choice] = prompt
+                level_data[prompt_choice] = self.remove_substrings(prompt, self.substrings_to_remove).lower()
+        
         if len(level_data) == 0:
             return None
-        # Filter the prompt
-        prompt = self.remove_substrings(prompt, self.substrings_to_remove).lower()
+            
         return uid, cad_vec_dict["vec"], level_data, cad_vec_dict["mask_cad_dict"]
 
     def remove_substrings(self, text, substrings):
@@ -127,6 +161,7 @@ def get_dataloaders(
     pin_memory: bool,
     num_workers: int,
     prefetch_factor: int,
+    debug: bool = False,
 ):
     """
     Generate a DataLoader for the NL2CADDataset.
@@ -141,6 +176,7 @@ def get_dataloaders(
     - pin_memory (bool): Whether to pin memory.
     - num_workers (int): The number of workers.
     - prefetch_factor (int): The prefetch factor.
+    - debug (bool): Whether to use debug mode.
 
     Returns:
     - dataloader (torch.utils.data.DataLoader): The DataLoader object.
@@ -150,12 +186,13 @@ def get_dataloaders(
 
     for subset in subsets:
         # Create an instance of the NL2CADDataset
-        dataset = NL2CAD_Dataset(
+        dataset = Text2CAD_Dataset(
             cad_seq_dir=cad_seq_dir,
             prompt_path=prompt_path,
             split_filepath=split_filepath,
             subset=subset,
             max_workers=num_workers,
+            debug=debug,
         )
 
         # Create a DataLoader with the specified parameters

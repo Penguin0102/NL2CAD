@@ -10,7 +10,7 @@ import random
 import numpy as np
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.nl2cad import NL2CAD
+from Cad_VLM.models.text2cad import Text2CAD
 from Cad_VLM.models.loss import CELoss
 from Cad_VLM.models.metrics import AccuracyCalculator
 from Cad_VLM.models.utils import print_with_separator
@@ -78,7 +78,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -177,6 +177,7 @@ def train_model(
         pin_memory=True,
         shuffle=False,  # If curriculum learning is enabled, set to False else it will automatically shuffle
         prefetch_factor=config["train"]["prefetch_factor"],
+        debug=config["debug"],
     )
 
     tensorboard_dir = os.path.join(log_dir, f"summary")
