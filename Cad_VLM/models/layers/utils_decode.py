@@ -1,4 +1,4 @@
-import math
+﻿import math
 import matplotlib.pyplot
 import numpy as np
 from typing import List

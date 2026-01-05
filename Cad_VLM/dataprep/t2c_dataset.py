@@ -8,7 +8,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 import pickle
 
-class Text2CAD_Dataset(Dataset):
+class NL2CAD_Dataset(Dataset):
     def __init__(
         self,
         cad_seq_dir: str,
@@ -24,7 +24,7 @@ class Text2CAD_Dataset(Dataset):
             split_filepath (string): Train_Test_Val json file path.
             subset (string): "train", "test" or "val"
         """
-        super(Text2CAD_Dataset, self).__init__()
+        super(NL2CAD_Dataset, self).__init__()
         self.cad_seq_dir = cad_seq_dir
         self.prompt_path = prompt_path
         self.prompt_df = pd.read_pickle(prompt_path)
@@ -129,7 +129,7 @@ def get_dataloaders(
     prefetch_factor: int,
 ):
     """
-    Generate a DataLoader for the Text2CADDataset.
+    Generate a DataLoader for the NL2CADDataset.
 
     Args:
     - cad_seq_dir (str): The directory containing the CAD sequence files.
@@ -149,8 +149,8 @@ def get_dataloaders(
     all_dataloaders = []
 
     for subset in subsets:
-        # Create an instance of the Text2CADDataset
-        dataset = Text2CAD_Dataset(
+        # Create an instance of the NL2CADDataset
+        dataset = NL2CAD_Dataset(
             cad_seq_dir=cad_seq_dir,
             prompt_path=prompt_path,
             split_filepath=split_filepath,

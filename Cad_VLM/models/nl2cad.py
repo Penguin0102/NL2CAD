@@ -1,4 +1,4 @@
-import os, sys
+﻿import os, sys
 
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-3]))
 
