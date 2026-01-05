@@ -51,7 +51,7 @@ unique_model_hash = []
 # ---------------------------------------------------------------------------- #
 
 # This code is used to convert the DeepCAD Json dataset to CAD-SIGNet vector representation.
-# Required for Training the NL2CAD Transformer
+# Required for Training the Text2CAD Transformer
 
 @measure_performance
 def main():
