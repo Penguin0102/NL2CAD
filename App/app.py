@@ -1,8 +1,15 @@
 import os, sys
 
-sys.path.append("..")
-sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-1]))
-sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-2]))
+# Get the absolute path of the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the project root directory (one level up from App)
+project_root = os.path.dirname(current_dir)
+
+if project_root not in sys.path:
+    sys.path.append(project_root)
+if current_dir not in sys.path:
+    sys.path.append(current_dir)
+
 from Cad_VLM.models.text2cad import Text2CAD
 from CadSeqProc.utility.macro import MAX_CAD_SEQUENCE_LENGTH, N_BIT
 from CadSeqProc.cad_sequence import CADSequence
@@ -63,7 +70,7 @@ def parse_config_file(config_file):
 
 
 
-config_path = "../Cad_VLM/config/inference_user_input.yaml"
+config_path = os.path.join(project_root, "Cad_VLM", "config", "inference_user_input.yaml")
 config = parse_config_file(config_path)
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 model = load_model(config, device)

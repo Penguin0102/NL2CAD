@@ -167,3 +167,17 @@ cython_debug/
 *ply
 **.sh
 *output
+
+# Project Specific
+logs/
+cache/
+output/
+trained/
+.gemini/
+*.pth
+*.pkl
+*.stl
+*.zip
+Cad_VLM/config/trainer_user_test.yaml
+Cad_VLM/dataprep/generate_split.py
+inspect_data.py

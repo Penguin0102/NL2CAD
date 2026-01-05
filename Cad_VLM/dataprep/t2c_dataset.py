@@ -27,48 +27,56 @@ class Text2CAD_Dataset(Dataset):
         super(Text2CAD_Dataset, self).__init__()
         self.cad_seq_dir = cad_seq_dir
         self.prompt_path = prompt_path
-        self.prompt_df = pd.read_pickle(prompt_path)
-        self.prompt_df = self.prompt_df[
-            self.prompt_df["abstract"].notnull()
-            & self.prompt_df["beginner"].notnull()
-            & self.prompt_df["intermediate"].notnull()
-            & self.prompt_df["expert"].notnull()
-        ]
-        self.all_prompt_choices = ["abstract", "beginner", "intermediate", "expert"]
-        self.substrings_to_remove = ["*", "\n", '"', "\_", "\\", "\t", "-", ":"]
-        # open spilt json
-        with open(os.path.join(split_filepath), "r") as f:
-            self.split = json.load(f)
+        print(f"[*] Step 1: Loading pickle file from {prompt_path} (this may take a minute)...", flush=True)
+        data = pd.read_pickle(prompt_path)
+        print(f"[+] Step 1 Complete. Data type: {type(data)}", flush=True)
 
-        self.uid_pair = self.split[subset]
-        func = self._prepare_data
-        
-        # if os.path.exists(f"{subset}_data.pkl"):
-        #     # Load the prompt data from the pickle file
-        #     with open(f"{subset}_data.pkl",'rb') as f:
-        #         self.prompt_data = pickle.load(f)
-        # else:
-        #     # Load the prompt data using ThreadPoolExecutor and _prepare_data function
-        #     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        #         # Create a dictionary to store the prompt data
-        #         self.prompt_data = {}
-        #         # Use ThreadPoolExecutor to process the prompt data in parallel
-        #         for data in tqdm(
-        #             executor.map(func, self.uid_pair),
-        #             total=len(self.uid_pair),
-        #             desc=f"Loading {subset} split",
-        #         ):
-        #             if data is not None:
-        #                 uid, cad_vec, prompt, mask_cad_dict = data
-        #                 if isinstance(prompt, dict):
-        #                     for key, val in prompt.items():
-        #                         self.prompt_data[uid + f"_{key}"] = (
-        #                             cad_vec,
-        #                             val,
-        #                             mask_cad_dict,
-        #                         )  # "0000/00001234" -> "0000/00001234_beginner"
+        if isinstance(data, dict) and any("_" in k for k in list(data.keys())[:10]):
+            print("[*] Step 2: Detected preprocessed dictionary. Extracting keys...", flush=True)
+            self.prompt_data = data
+            self.keys = list(self.prompt_data.keys())
+            print(f"[*] Step 3: Inferring UID pairs from {len(self.keys)} keys...", flush=True)
+            self.uid_pair = list(set([k.split("_")[0] for k in self.keys]))
+            print(f"[+] Step 3 Complete. Found {len(self.uid_pair)} unique UIDs.", flush=True)
+        else:
+            print("Detected prompt DataFrame. Processing...")
+            self.prompt_df = data
+            self.prompt_df = self.prompt_df[
+                self.prompt_df["abstract"].notnull()
+                & self.prompt_df["beginner"].notnull()
+                & self.prompt_df["intermediate"].notnull()
+                & self.prompt_df["expert"].notnull()
+            ]
+            self.all_prompt_choices = ["abstract", "beginner", "intermediate", "expert"]
+            self.substrings_to_remove = ["*", "\n", '"', "\_", "\\", "\t", "-", ":"]
+            
+            with open(os.path.join(split_filepath), "r") as f:
+                self.split = json.load(f)
 
-        # self.keys = list(self.prompt_data.keys())
+            self.uid_pair = self.split[subset]
+            func = self._prepare_data
+            
+            actual_workers = max(1, max_workers)
+            print(f"Loading data using {actual_workers} workers...")
+            with ThreadPoolExecutor(max_workers=actual_workers) as executor:
+                self.prompt_data = {}
+                for data in tqdm(
+                    executor.map(func, self.uid_pair),
+                    total=len(self.uid_pair),
+                    desc=f"Loading {subset} split",
+                ):
+                    if data is not None:
+                        uid, cad_vec, prompt, mask_cad_dict = data
+                        if isinstance(prompt, dict):
+                            for key, val in prompt.items():
+                                self.prompt_data[uid + f"_{key}"] = (
+                                    cad_vec,
+                                    val,
+                                    mask_cad_dict,
+                                )
+
+            self.keys = list(self.prompt_data.keys())
+
         print(f"Found {len(self.prompt_data)} samples for {subset} split.")
 
     def __len__(self):
