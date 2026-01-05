@@ -7,7 +7,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
  # ---------------------------------------------------------------------------- #
- #                            Only for Text2CAD v1.1                            #
+ #                            Only for NL2CAD v1.1                            #
  # ---------------------------------------------------------------------------- #
 
 

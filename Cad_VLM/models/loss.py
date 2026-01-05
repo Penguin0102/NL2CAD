@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class CELoss(nn.Module):
     """
-    Cross Entropy Loss for Text2CAD
+    Cross Entropy Loss for NL2CAD
     """
 
     def __init__(self, device):

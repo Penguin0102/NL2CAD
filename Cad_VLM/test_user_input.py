@@ -9,7 +9,7 @@ sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-2]))
 from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import nl2cad
 from Cad_VLM.models.utils import print_with_separator, text_prompt
 from loguru import logger
 from rich import print
@@ -51,7 +51,7 @@ def save_yaml_file(yaml_data, filename, output_dir):
 
 @logger.catch()
 def main():
-    print_with_separator("⚡Text2CAD Test from User Input⚡")
+    print_with_separator("⚡NL2CAD Test from User Input�?)
 
     # --------------------------------- Argument --------------------------------- #
     parser = argparse.ArgumentParser()
@@ -74,7 +74,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    text2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = nl2cad(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -107,7 +107,7 @@ def main():
     # -------------------------------- Train Model ------------------------------- #
     test_model(
         prompt=args.prompt,
-        model=text2cad,
+        model=nl2cad,
         device=device,
         log_dir=log_dir,
         config=config,

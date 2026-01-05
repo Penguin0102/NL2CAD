@@ -10,7 +10,7 @@ import random
 import numpy as np
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import nl2cad
 from Cad_VLM.models.loss import CELoss
 from Cad_VLM.models.metrics import AccuracyCalculator
 from Cad_VLM.models.utils import print_with_separator
@@ -41,7 +41,7 @@ logging.config.dictConfig(
 t2clogger = CLGLogger().configure_logger(verbose=True).logger
 
 # ---------------------------------------------------------------------------- #
-#                            Text2CAD Training Code                            #
+#                            nl2cad Training Code                            #
 # ---------------------------------------------------------------------------- #
 
 
@@ -58,7 +58,7 @@ def save_yaml_file(yaml_data, filename, output_dir):
 
 @logger.catch()
 def main():
-    print_with_separator("😊 Text2CAD Training 😊")
+    print_with_separator("😊 nl2cad Training 😊")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -78,19 +78,19 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    text2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = nl2cad(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
     # Freeze the base text embedder
-    for param in text2cad.base_text_embedder.parameters():
+    for param in nl2cad.base_text_embedder.parameters():
         param.requires_grad = False
 
-    # text2cad = torch.nn.DataParallel(
-    #     text2cad
+    # nl2cad = torch.nn.DataParallel(
+    #     nl2cad
     # )  # For Parallel Processing (during Training)
 
-    optimizer = optim.AdamW(text2cad.parameters(), lr=config["train"]["lr"])
+    optimizer = optim.AdamW(nl2cad.parameters(), lr=config["train"]["lr"])
     scheduler = ExponentialLR(optimizer, gamma=0.999)
     criterion = CELoss(device=device)
 
@@ -125,7 +125,7 @@ def main():
     # -------------------------------- Train Model ------------------------------- #
 
     train_model(
-        model=text2cad,
+        model=nl2cad,
         criterion=criterion,
         optimizer=optimizer,
         scheduler=scheduler,
@@ -242,7 +242,7 @@ def train_model(
         with tqdm(
             train_loader,
             ascii=True,
-            desc=f"\033[94mText2CAD\033[0m: Epoch [{epoch}/{num_epochs+1}]✨",
+            desc=f"\033[94mnl2cad\033[0m: Epoch [{epoch}/{num_epochs+1}]�?,
         ) as pbar:
             for _, vec_dict, prompt, mask_cad_dict in pbar:
                 step += 1
@@ -387,7 +387,7 @@ def train_model(
         scheduler.step()
         # Print epoch summary
         logger.info(
-            f"Epoch [{epoch}/{num_epochs+1}]✅,"
+            f"Epoch [{epoch}/{num_epochs+1}]�?"
             f" Train Loss: {np.round(np.mean(train_loss), decimals=2)},"
             f" Train Seq Acc: {np.round(np.mean(train_accuracy_seq['seq']), decimals=2)},"
             f" Val Seq Acc: {np.round(np.mean(val_accuracy_seq['seq']), decimals=2)}",
@@ -435,7 +435,7 @@ def validation_one_epoch(
     with torch.no_grad():
         # tqdm is used to create a progress bar for validation
         with tqdm(
-            val_loader, ascii=True, desc=f"Epoch [{epoch}/{num_epochs+1}] Validation✨"
+            val_loader, ascii=True, desc=f"Epoch [{epoch}/{num_epochs+1}] Validation�?
         ) as pbar:
             for _, vec_dict, prompt, mask_cad_dict in pbar:
                 # If the number of batches specified by num_batch is reached, break the loop

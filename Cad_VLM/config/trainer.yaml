@@ -1,5 +1,5 @@
  # ---------------------------------------------------------------------------- #
- #                      Config for Text2CAD Model Training                      #
+ #                      Config for NL2CAD Model Training                      #
  # ---------------------------------------------------------------------------- #
  
  
@@ -13,7 +13,7 @@ text_encoder:
     # Maximum Text Sequence Length
     max_seq_len: 512
     # Cache Directory
-    cache_dir: "D:/MyCODE/CAD/Text2CAD/cache"
+    cache_dir: "D:/MyCODE/CAD/NL2CAD/cache"
 
   # ----------------- Configuration for the Adaptive Layer ----------------- #
   adaptive_layer:
@@ -44,11 +44,11 @@ cad_decoder:
 # --------------- Configuration related to training dataloader --------------- #
 train_data:
   # Root directory of the training data
-  cad_seq_dir: "D:/MyCODE/CAD/Text2CAD/Cad_VLM/dataprep/cad_seq"
+  cad_seq_dir: "D:/MyCODE/CAD/NL2CAD/Cad_VLM/dataprep/cad_seq"
   # Path to the CSV file containing the text prompts
-  prompt_path: "D:/MyCODE/CAD/Text2CAD/Cad_VLM/dataprep/train_data.pkl"
+  prompt_path: "D:/MyCODE/CAD/NL2CAD/Cad_VLM/dataprep/train_data.pkl"
   # JSON file containing information about train, test, and validation splits
-  split_filepath: "D:/MyCODE/CAD/Text2CAD/Cad_VLM/dataprep/train_val_test_split.json"
+  split_filepath: "D:/MyCODE/CAD/NL2CAD/Cad_VLM/dataprep/train_val_test_split.json"
   # Maximum sequence length for input data
   max_seq_len: 512
 
@@ -69,7 +69,7 @@ train:
   #prefetch_factor: 10
   prefetch_factor: 2
   # Directory for logging training information
-  log_dir: "D:/MyCODE/CAD/Text2CAD/logs"
+  log_dir: "D:/MyCODE/CAD/NL2CAD/logs"
   # Path to saved model checkpoint for Resuming Training (optional)
   checkpoint_path:  # Set to None if no checkpoint is available
   # Checkpoint interval

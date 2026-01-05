@@ -10,7 +10,7 @@ from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.utils import chamfer_dist, normalize_pc
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import nl2cad
 from Cad_VLM.models.utils import print_with_separator
 from Cad_VLM.dataprep.t2c_dataset import get_dataloaders
 from loguru import logger
@@ -37,7 +37,7 @@ logging.config.dictConfig(
 t2clogger = CLGLogger().configure_logger(verbose=True).logger
 
 # ---------------------------------------------------------------------------- #
-#                              Text2CAD Test Code                              #
+#                              nl2cad Test Code                              #
 # ---------------------------------------------------------------------------- #
 
 
@@ -54,7 +54,7 @@ def save_yaml_file(yaml_data, filename, output_dir):
 
 @logger.catch()
 def main():
-    print_with_separator("😊 Text2CAD Inference 😊")
+    print_with_separator("😊 nl2cad Inference 😊")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -74,7 +74,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    text2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = nl2cad(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -107,7 +107,7 @@ def main():
     # -------------------------------- Train Model ------------------------------- #
 
     test_model(
-        model=text2cad,
+        model=nl2cad,
         device=device,
         log_dir=log_dir,
         config=config,
@@ -187,7 +187,7 @@ def test_model(
         TOPK = 5
 
     with torch.no_grad():
-        with tqdm(test_loader, ascii=True, desc=f"Inference✨") as pbar:
+        with tqdm(test_loader, ascii=True, desc=f"Inference�?) as pbar:
             for uid_level, vec_dict, prompt, _ in pbar:
                 for key, value in vec_dict.items():
                     vec_dict[key] = value.to(device)
