@@ -181,3 +181,8 @@ trained/
 Cad_VLM/config/trainer_user_test.yaml
 Cad_VLM/dataprep/generate_split.py
 inspect_data.py
+mutile-data/
+fix_*.py
+apply_*.py
+inspect_*.py
+rename_script.py
