@@ -58,8 +58,8 @@ train:
   lr: 0.0001
   # Batch size for training (RTX 4060 8GB - 使用较小batch)
   batch_size: 2
-  # Number of epochs for training (数据量大，2个epoch足够演示)
-  num_epochs: 2
+  # Number of epochs for training
+  num_epochs: 10
   # Number of workers for the DataLoader during training
   num_workers: 4
   # Prefetch factor for the DataLoader during training
