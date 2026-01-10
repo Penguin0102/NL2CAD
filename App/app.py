@@ -83,11 +83,9 @@ def genrate_cad_model_from_text(text):
 
 
 examples = [
-    "A ring.",
-    "A rectangular prism.",
-    "A 3D star shape with 5 points.",
-    "The CAD model features a cylindrical object with a cylindrical hole in the center.",
-    "The CAD model features a rectangular metal plate with four holes along its length.",
+    "A ring",
+    "A 3D star shape with 5 points",
+    "A cube with a middle hole",
 ]
 
 # Custom CSS for Light Mode Industrial/B2B SaaS look
@@ -218,32 +216,35 @@ body, .gradio-container {
 
 .templates-grid {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.6rem;
     margin-top: 0.8rem;
 }
 
 .template-tag {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    background: #f1f5f9;
+    display: block;
+    width: 100% !important;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    background: #ffffff;
     border: 1px solid var(--border-color);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
     text-align: left !important;
-    width: auto !important;
-    min-width: 0 !important;
+    box-shadow: var(--card-shadow);
+    line-height: 1.4;
+    white-space: normal !important;
+    word-wrap: break-word !important;
 }
 
 .template-tag:hover {
     border-color: var(--accent-color);
     color: var(--accent-color);
-    background: #fff;
-    box-shadow: var(--card-shadow);
+    background: #f8fafc;
+    transform: translateX(4px);
 }
 
 .export-fab {
@@ -330,11 +331,10 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
             
             with gr.Column(elem_classes="recent-templates-section"):
                 gr.HTML("<div class=\"design-prompt-label\">Recent Templates</div>")
-                with gr.Row(elem_classes="templates-grid"):
-                    template_1 = gr.Button("Mechanical Gear", elem_classes="template-tag")
-                    template_2 = gr.Button("Cylindrical Bolt", elem_classes="template-tag")
-                    template_3 = gr.Button("Star Prism", elem_classes="template-tag")
-                    template_4 = gr.Button("Hollow Ring", elem_classes="template-tag")
+                with gr.Column(elem_classes="templates-grid"):
+                    template_1 = gr.Button("A ring", elem_classes="template-tag")
+                    template_2 = gr.Button("A 3D star shape with 5 points", elem_classes="template-tag")
+                    template_3 = gr.Button("A cube with a middle hole", elem_classes="template-tag")
 
         # Right Panel: Viewport
         with gr.Column(scale=9, elem_id="viewport-container"):
@@ -363,10 +363,9 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
     )
     
     # Template clicks
-    template_1.click(fn=lambda: "A mechanical gear with 12 teeth", outputs=input_text)
-    template_2.click(fn=lambda: "A cylindrical bolt with a hexagonal head", outputs=input_text)
-    template_3.click(fn=lambda: "A 3D star shape with 5 points", outputs=input_text)
-    template_4.click(fn=lambda: "A hollow ring with a smooth finish", outputs=input_text)
+    template_1.click(fn=lambda: "A ring", outputs=input_text)
+    template_2.click(fn=lambda: "A 3D star shape with 5 points", outputs=input_text)
+    template_3.click(fn=lambda: "A cube with a middle hole", outputs=input_text)
 
     # Export interaction
     export_btn.click(
