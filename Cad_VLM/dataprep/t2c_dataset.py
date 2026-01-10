@@ -7,6 +7,8 @@ from tqdm import tqdm
 import re
 from concurrent.futures import ThreadPoolExecutor
 import pickle
+from CadSeqProc.cad_sequence import CADSequence
+from CadSeqProc.utility.macro import MAX_CAD_SEQUENCE_LENGTH
 
 class Text2CAD_Dataset(Dataset):
     def __init__(
@@ -125,7 +127,25 @@ class Text2CAD_Dataset(Dataset):
         if len(level_data) == 0:
             return None
             
-        return uid, cad_vec_dict["vec"], level_data, cad_vec_dict["mask_cad_dict"]
+        # Generate flag_vec and index_vec using CADSequence
+        try:
+            cad_seq_obj = CADSequence.from_vec(cad_vec_dict["vec"], denumericalize=False)
+            cad_seq_obj.to_vec(padding=True, max_cad_seq_len=MAX_CAD_SEQUENCE_LENGTH)
+            
+            vec_dict = {
+                "cad_vec": cad_seq_obj.cad_vec,
+                "flag_vec": cad_seq_obj.flag_vec,
+                "index_vec": cad_seq_obj.index_vec,
+            }
+        except Exception as e:
+            # Fallback if CADSequence fails
+            vec_dict = {
+                "cad_vec": cad_vec_dict["vec"],
+                "flag_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
+                "index_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
+            }
+
+        return uid, vec_dict, level_data, cad_vec_dict["mask_cad_dict"]
 
     def remove_substrings(self, text, substrings):
         """

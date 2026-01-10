@@ -1,3 +1,7 @@
+# ---------------------------------------------------------------------------- #
+#                      Config for NL2CAD Model Inference/Testing               #
+# ---------------------------------------------------------------------------- #
+
 # ---------------------- Configuration for text encoder ---------------------- #
 text_encoder:
   # ----------------- Configuration for the Base Text Embedder ----------------- #
@@ -7,12 +11,12 @@ text_encoder:
     # Maximum Text Sequence Length
     max_seq_len: 512
     # Cache Directory
-    cache_dir: "YOUR DIR"
+    cache_dir: "c:/Users/86185/Desktop/NL2CAD/cache"
 
   # ----------------- Configuration for the Adaptive Layer ----------------- #
   adaptive_layer:
     # Input dimension of the text encoder (1024 for bert, else 4096)
-    in_dim: 1024
+    in_dim: 1024 
     # Output dimension of the text encoder (1024 for bert, else 4096)
     out_dim: 1024
     # Number of attention heads in the text encoder
@@ -35,34 +39,34 @@ cad_decoder:
   # Starting level for channel attention in the CAD decoder
   ca_level_start: 2
 
-# --------------- Configuration related to training dataloader --------------- #
+# --------------- Configuration related to test dataloader --------------- #
 test_data:
-  # Root directory of the training data
-  cad_seq_dir: "YOUR DIR"
+  # Root directory of the test data
+  cad_seq_dir: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/cad_seq"
   # Path to the CSV file containing the text prompts
-  prompt_path: "YOUR PATH"
+  prompt_path: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_data.pkl"
   # JSON file containing information about train, test, and validation splits
-  split_filepath: "YOUR PATH"
+  split_filepath: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_val_test_split.json"
   # Maximum sequence length for input data
   max_seq_len: 512
 
-# --------------------- Configuration related to training -------------------- #
+# --------------------- Configuration related to testing -------------------- #
 test:
-  # Batch size for training
-  batch_size: 4 # for 80 GB gpu
-  # Number of workers for the DataLoader during training
-  num_workers: 30
-  # Prefetch factor for the DataLoader during training
-  prefetch_factor: 10
-  # Directory for logging training information
-  log_dir: "YOUR DIR"
-  # Path to saved model checkpoint (optional)
-  checkpoint_path: "YOUR CHECKPOINT PATH"
-  nucleus_prob: 0
+  # Batch size for testing
+  batch_size: 1
+  # Number of workers for the DataLoader during testing
+  num_workers: 4
+  # Prefetch factor for the DataLoader during testing
+  prefetch_factor: 2
+  # Directory for logging test information
+  log_dir: "c:/Users/86185/Desktop/NL2CAD/logs"
+  # Path to saved model checkpoint for testing
+  checkpoint_path:  # Will be set by the evaluation script
+  # Sampling type: "max" for greedy decoding, "topk" for top-k sampling
   sampling_type: "max"
 
 # ------------------------------ Debug mode flag ----------------------------- #
 debug: False
 
-# --------------- Additional information (leave empty for now) --------------- #
-info: "Inference"
+# --------------- Additional information --------------- #
+info: "NL2CAD Inference Configuration"

@@ -10,7 +10,7 @@ from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.utils import chamfer_dist, normalize_pc
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.nl2cad import NL2CAD
+from Cad_VLM.models.text2cad import Text2CAD
 from Cad_VLM.models.utils import print_with_separator
 from Cad_VLM.dataprep.t2c_dataset import get_dataloaders
 from loguru import logger
@@ -74,7 +74,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 

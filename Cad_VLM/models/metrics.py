@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import torch
@@ -55,8 +55,11 @@ class AccuracyCalculator:
         # Calculate the total number of predictions excluding the discard token
         total = torch.sum(mask)
 
-        # Calculate the accuracy
-        accuracy = float(correct) / float(total)
+        # Calculate the accuracy (handle division by zero)
+        if float(total) == 0:
+            accuracy = 0.0
+        else:
+            accuracy = float(correct) / float(total)
 
         return accuracy
 

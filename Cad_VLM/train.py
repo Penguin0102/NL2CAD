@@ -165,6 +165,16 @@ def train_model(
     Returns:
         None
     """
+    
+    # 训练历史记录
+    training_history = {
+        "train_loss": [],
+        "train_seq_loss": [],
+        "train_seq_acc": [],
+        "val_seq_acc": [],
+        "learning_rate": [],
+        "epochs": []
+    }
 
     # Create the dataloader for train
     train_loader, val_loader = get_dataloaders(
@@ -269,6 +279,8 @@ def train_model(
                 mask_cad_dict["key_padding_mask"] = mask_cad_dict["key_padding_mask"][
                     :, :-1
                 ]
+                # Attention mask for input Cad Sequence
+                mask_cad_dict["attn_mask"] = mask_cad_dict["attn_mask"][:, :-1, :-1]
 
                 # Output from the model
                 cad_vec_pred, _ = model(
@@ -386,16 +398,62 @@ def train_model(
                 )
 
         scheduler.step()
+        
+        # 记录训练历史
+        epoch_train_loss = np.mean(train_loss)
+        epoch_train_seq_loss = np.mean(train_loss_seq["seq"])
+        epoch_train_seq_acc = np.mean(train_accuracy_seq["seq"])
+        epoch_val_seq_acc = np.mean(val_accuracy_seq["seq"])
+        current_lr = scheduler.get_last_lr()[0]
+        
+        training_history["epochs"].append(epoch)
+        training_history["train_loss"].append(float(epoch_train_loss))
+        training_history["train_seq_loss"].append(float(epoch_train_seq_loss))
+        training_history["train_seq_acc"].append(float(epoch_train_seq_acc))
+        training_history["val_seq_acc"].append(float(epoch_val_seq_acc))
+        training_history["learning_rate"].append(float(current_lr))
+        
         # Print epoch summary
         logger.info(
             f"Epoch [{epoch}/{num_epochs+1}]✅,"
-            f" Train Loss: {np.round(np.mean(train_loss), decimals=2)},"
-            f" Train Seq Acc: {np.round(np.mean(train_accuracy_seq['seq']), decimals=2)},"
-            f" Val Seq Acc: {np.round(np.mean(val_accuracy_seq['seq']), decimals=2)}",
+            f" Train Loss: {np.round(epoch_train_loss, decimals=2)},"
+            f" Train Seq Acc: {np.round(epoch_train_seq_acc, decimals=2)},"
+            f" Val Seq Acc: {np.round(epoch_val_seq_acc, decimals=2)}",
         )
 
     # Close the tensorboard summary writer
     writer.close()
+    
+    # 保存训练历史到JSON文件
+    if not config["debug"]:
+        import json
+        history_path = os.path.join(log_dir, "training_history.json")
+        with open(history_path, "w", encoding="utf-8") as f:
+            json.dump(training_history, f, indent=4, ensure_ascii=False)
+        t2clogger.info(f"Training history saved to {history_path}")
+        
+        # 生成训练摘要报告
+        summary_report = {
+            "final_train_loss": float(np.mean(train_loss)),
+            "final_train_seq_acc": float(np.mean(train_accuracy_seq["seq"])),
+            "final_val_seq_acc": float(np.mean(val_accuracy_seq["seq"])),
+            "total_epochs": num_epochs,
+            "best_val_acc": float(max(training_history["val_seq_acc"])) if training_history["val_seq_acc"] else 0,
+            "model_config": {
+                "dim": config["cad_decoder"]["cdim"],
+                "num_layers": config["cad_decoder"]["num_layers"],
+                "num_heads": config["cad_decoder"]["num_heads"],
+            },
+            "training_config": {
+                "learning_rate": config["train"]["lr"],
+                "batch_size": config["train"]["batch_size"],
+            }
+        }
+        summary_path = os.path.join(log_dir, "training_summary.json")
+        with open(summary_path, "w", encoding="utf-8") as f:
+            json.dump(summary_report, f, indent=4, ensure_ascii=False)
+        t2clogger.info(f"Training summary saved to {summary_path}")
+    
     t2clogger.success("Training Finished.")
 
 
