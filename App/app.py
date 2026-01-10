@@ -90,18 +90,19 @@ examples = [
     "The CAD model features a rectangular metal plate with four holes along its length.",
 ]
 
-# Custom CSS for Industrial/B2B SaaS look
+# Custom CSS for Light Mode Industrial/B2B SaaS look
 custom_css = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap');
 
 :root {
-    --bg-color: #0a0a0c;
-    --sidebar-bg: #111114;
-    --accent-color: #00d2ff;
-    --accent-glow: rgba(0, 210, 255, 0.4);
-    --text-primary: #e0e0e0;
-    --text-secondary: #888888;
-    --border-color: #222226;
+    --bg-color: #f8fafc;
+    --sidebar-bg: #ffffff;
+    --accent-color: #0070f3;
+    --accent-glow: rgba(0, 112, 243, 0.15);
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 }
 
 body, .gradio-container {
@@ -123,12 +124,13 @@ body, .gradio-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.02);
 }
 
 #viewport-container {
     position: relative;
     height: 100vh;
-    background: radial-gradient(circle at center, #1a1a1e 0%, #0a0a0c 100%);
+    background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -142,18 +144,18 @@ body, .gradio-container {
     background-image: 
         linear-gradient(var(--border-color) 1px, transparent 1px),
         linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
-    background-size: 60px 60px;
+    background-size: 50px 50px;
     background-position: center;
-    opacity: 0.15;
+    opacity: 0.4;
     pointer-events: none;
 }
 
 .nl2cad-title {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    letter-spacing: -0.06em;
-    margin-bottom: 3rem;
-    color: #fff;
+    letter-spacing: -0.04em;
+    margin-bottom: 2.5rem;
+    color: var(--text-primary);
 }
 
 .nl2cad-title span {
@@ -162,29 +164,51 @@ body, .gradio-container {
 
 .design-prompt-label {
     font-family: 'Roboto Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+}
+
+.prompt-input-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+#prompt-input textarea {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    color: var(--text-primary) !important;
+    padding: 1rem !important;
+    font-size: 0.95rem !important;
+    box-shadow: var(--card-shadow) !important;
+    transition: all 0.2s ease !important;
+}
+
+#prompt-input textarea:focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 4px var(--accent-glow) !important;
 }
 
 .synthesize-btn {
     background: var(--accent-color) !important;
-    color: #000 !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
     border: none !important;
-    box-shadow: 0 0 25px var(--accent-glow) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    margin-top: 1.5rem !important;
-    border-radius: 8px !important;
-    height: 50px !important;
+    box-shadow: 0 4px 14px 0 rgba(0, 112, 243, 0.39) !important;
+    transition: all 0.2s ease !important;
+    margin-top: 0.5rem !important;
+    border-radius: 10px !important;
+    height: 52px !important;
+    font-size: 1rem !important;
 }
 
 .synthesize-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 40px var(--accent-glow) !important;
-    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 112, 243, 0.23) !important;
+    filter: brightness(1.05);
 }
 
 .recent-templates-section {
@@ -192,58 +216,79 @@ body, .gradio-container {
     padding-top: 2rem;
 }
 
+.templates-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+
 .template-tag {
     display: inline-block;
-    padding: 0.4rem 1rem;
-    border-radius: 999px;
-    background: #1a1a1e;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: #f1f5f9;
     border: 1px solid var(--border-color);
     font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-right: 0.6rem;
-    margin-bottom: 0.6rem;
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
+    font-weight: 500;
+    text-align: left !important;
+    width: auto !important;
+    min-width: 0 !important;
 }
 
 .template-tag:hover {
     border-color: var(--accent-color);
     color: var(--accent-color);
-    background: rgba(0, 210, 255, 0.05);
+    background: #fff;
+    box-shadow: var(--card-shadow);
 }
 
 .export-fab {
     position: absolute !important;
-    bottom: 2.5rem !important;
-    right: 2.5rem !important;
+    bottom: 2rem !important;
+    right: 2rem !important;
     z-index: 100 !important;
-    background: rgba(255, 255, 255, 0.03) !important;
+    background: rgba(255, 255, 255, 0.8) !important;
     backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: #fff !important;
-    padding: 0.8rem 1.8rem !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    padding: 0.7rem 1.5rem !important;
     border-radius: 12px !important;
     font-weight: 600 !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
     width: auto !important;
+    transition: all 0.2s ease !important;
 }
 
 .export-fab:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    background: #fff !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    transform: translateY(-2px);
 }
 
 /* Viewport styling */
 .model-viewer {
     background: transparent !important;
     border: none !important;
-    height: 80vh !important;
+    height: 85vh !important;
+    width: 100% !important;
+}
+
+/* Status text */
+#status-text {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
 /* Hide Gradio defaults */
 footer { display: none !important; }
 .gr-prose { display: none !important; }
-.gr-button-secondary { background: #1a1a1e !important; border-color: var(--border-color) !important; }
+.gr-button-secondary { background: #f1f5f9 !important; border-color: var(--border-color) !important; color: var(--text-primary) !important; }
 """
 
 
@@ -266,24 +311,26 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
             gr.HTML(
                 """
                 <div class="nl2cad-title">NL2<span>CAD</span></div>
-                <div class="design-prompt-label">Design Prompt</div>
+                <div class="design-prompt-label">Configuration</div>
                 """
             )
             
-            input_text = gr.Textbox(
-                show_label=False,
-                placeholder="Enter a description (e.g., 'A mechanical gear with 12 teeth')...",
-                lines=6,
-                elem_id="prompt-input"
-            )
+            with gr.Column(elem_classes="prompt-input-wrapper"):
+                gr.HTML("<div class=\"design-prompt-label\">Design Prompt</div>")
+                input_text = gr.Textbox(
+                    show_label=False,
+                    placeholder="Describe the CAD shape you want to generate...",
+                    lines=6,
+                    elem_id="prompt-input"
+                )
             
-            generate_btn = gr.Button("Synthesize", elem_classes="synthesize-btn")
+            generate_btn = gr.Button("Synthesize Design", elem_classes="synthesize-btn")
             
             status_md = gr.Markdown("Ready to synthesize.", elem_id="status-text")
             
             with gr.Column(elem_classes="recent-templates-section"):
                 gr.HTML("<div class=\"design-prompt-label\">Recent Templates</div>")
-                with gr.Row():
+                with gr.Row(elem_classes="templates-grid"):
                     template_1 = gr.Button("Mechanical Gear", elem_classes="template-tag")
                     template_2 = gr.Button("Cylindrical Bolt", elem_classes="template-tag")
                     template_3 = gr.Button("Star Prism", elem_classes="template-tag")
