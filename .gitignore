@@ -187,3 +187,5 @@ apply_*.py
 inspect_*.py
 rename_script.py
 report/
+repot/
+training_log.txt
