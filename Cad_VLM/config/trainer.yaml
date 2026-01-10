@@ -59,7 +59,7 @@ train:
   # Batch size for training (RTX 4060 8GB - 使用较小batch)
   batch_size: 2
   # Number of epochs for training
-  num_epochs: 10
+  num_epochs: 20
   # Number of workers for the DataLoader during training
   num_workers: 4
   # Prefetch factor for the DataLoader during training

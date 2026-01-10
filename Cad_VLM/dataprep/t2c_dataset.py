@@ -48,11 +48,32 @@ class Text2CAD_Dataset(Dataset):
             data = pd.read_pickle(prompt_path)
             if isinstance(data, dict):
                 # It's already the pre-processed prompt_data!
-                self.prompt_data = data
+                # Split data by ratio (80% train, 20% validation) instead of using split file
+                all_data = data
+                all_keys = sorted(list(all_data.keys()))  # Sort for reproducibility
+                
+                # Use fixed seed for reproducible splits
+                import random
+                rng = random.Random(42)
+                rng.shuffle(all_keys)
+                
+                total_samples = len(all_keys)
+                train_ratio = 0.8
+                train_size = int(total_samples * train_ratio)
+                
+                if subset == "train":
+                    selected_keys = all_keys[:train_size]
+                elif subset == "validation":
+                    selected_keys = all_keys[train_size:]
+                else:  # test - use validation set
+                    selected_keys = all_keys[train_size:]
+                
+                self.prompt_data = {k: all_data[k] for k in selected_keys}
                 self.keys = list(self.prompt_data.keys())
+                
                 if debug:
                     self.keys = self.keys[:10]
-                print(f"Found {len(self.keys)} samples for {subset} split (loaded from dict).")
+                print(f"Found {len(self.keys)} samples for {subset} split (auto-split from {total_samples} total).")
                 return
             
             self.prompt_df = data
