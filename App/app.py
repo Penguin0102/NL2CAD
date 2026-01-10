@@ -1,4 +1,5 @@
 import os, sys
+import zipfile
 
 sys.path.append("..")
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-1]))
@@ -50,11 +51,12 @@ def test_model(model, text, config, device):
             pred_cad_seq_dict["cad_vec"][0].cpu().numpy(),
             bit=N_BIT,
             post_processing=True,
-        ).create_mesh()
+        )
+        cad_model = pred_cad.create_mesh()
 
-        return pred_cad.mesh, pred_cad
+        return cad_model.mesh, pred_cad
     except Exception as e:
-        return None
+        return None, None
 
 def parse_config_file(config_file):
     with open(config_file, "r") as file:
@@ -73,11 +75,30 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def genrate_cad_model_from_text(text):
     global model, config
-    mesh,*extra = test_model(model=model, text=text, config=config, device=device)
+    mesh, pred_cad = test_model(model=model, text=text, config=config, device=device)
     if mesh is not None:
-        output_path = os.path.join(OUTPUT_DIR, "output.stl")
-        mesh.export(output_path)
-        return output_path
+        stl_path = os.path.join(OUTPUT_DIR, "output.stl")
+        step_path = os.path.join(OUTPUT_DIR, "output.step")
+        zip_path = os.path.join(OUTPUT_DIR, "nl2cad_export.zip")
+        
+        # Export STL
+        mesh.export(stl_path)
+        
+        # Export STEP
+        try:
+            pred_cad.save_stp(filename="output", output_folder=OUTPUT_DIR, type="step")
+        except Exception as e:
+            print(f"Error exporting STEP: {e}")
+            # If STEP fails, we still have STL
+            step_path = None
+        
+        # Create ZIP
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write(stl_path, arcname="output.stl")
+            if step_path and os.path.exists(step_path):
+                zipf.write(step_path, arcname="output.step")
+            
+        return stl_path, zip_path
     else:
         raise Exception("Error generating CAD model from text")
 
@@ -262,6 +283,7 @@ body, .gradio-container {
     box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
     width: auto !important;
     transition: all 0.2s ease !important;
+    cursor: pointer !important;
 }
 
 .export-fab:hover {
@@ -295,15 +317,10 @@ footer { display: none !important; }
 
 def _wrapped_generate(text):
     try:
-        path = genrate_cad_model_from_text(text)
-        return path, f"✅ Generated: {text}"
+        stl_path, zip_path = genrate_cad_model_from_text(text)
+        return stl_path, f"✅ Generated: {text}", zip_path
     except Exception as e:
-        return None, f"❌ Error: {str(e)}"
-
-def export_model(model_path):
-    if model_path and os.path.exists(model_path):
-        return model_path
-    return None
+        return None, f"❌ Error: {str(e)}", None
 
 with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
     with gr.Row(equal_height=True):
@@ -344,39 +361,25 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
                 clear_color=[0, 0, 0, 0] # Transparent to show the gradient background
             )
             
-            export_btn = gr.Button("↓ Export STEP/STL", elem_classes="export-fab")
-            
-            # Hidden component to handle file download
-            export_file = gr.File(label="Download Model", visible=False)
+            export_btn = gr.DownloadButton("↓ Export STEP/STL", elem_classes="export-fab", visible=False)
 
     # Interactions
     generate_btn.click(
         _wrapped_generate,
         inputs=input_text,
-        outputs=[output_model, status_md],
+        outputs=[output_model, status_md, export_btn],
     )
     
     input_text.submit(
         _wrapped_generate,
         inputs=input_text,
-        outputs=[output_model, status_md],
+        outputs=[output_model, status_md, export_btn],
     )
     
     # Template clicks
     template_1.click(fn=lambda: "A ring", outputs=input_text)
     template_2.click(fn=lambda: "A 3D star shape with 5 points", outputs=input_text)
     template_3.click(fn=lambda: "A cube with a middle hole", outputs=input_text)
-
-    # Export interaction
-    export_btn.click(
-        fn=export_model,
-        inputs=output_model,
-        outputs=export_file
-    )
-    
-    # Trigger download when file is ready
-    export_file.change(fn=None, js="() => { document.querySelector('#viewport-container a[download]').click(); }")
-
 
 
 if __name__ == "__main__":
