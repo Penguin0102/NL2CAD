@@ -44,11 +44,11 @@ cad_decoder:
 # --------------- Configuration related to training dataloader --------------- #
 train_data:
   # Root directory of the training data
-  cad_seq_dir: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/cad_seq"
-  # Path to the CSV file containing the text prompts
-  prompt_path: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_data.pkl"
+  cad_seq_dir: "G:/text2cad-data/cad_seq/cad_seq"
+  # Path to the CSV file containing the text prompts (使用validation数据进行演示)
+  prompt_path: "G:/text2cad-data/validation_data.pkl"
   # JSON file containing information about train, test, and validation splits
-  split_filepath: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_val_test_split.json"
+  split_filepath: "G:/text2cad-data/train_val_test_split.json"
   # Maximum sequence length for input data
   max_seq_len: 512
 
@@ -56,24 +56,20 @@ train_data:
 train:
   # Learning rate for training
   lr: 0.0001
-  # Batch size for training
-  #batch_size: 16 # for 80 GB gpu
-  batch_size: 4
-  # Number of epochs for training
-  #num_epochs: 150
-  num_epochs: 1
+  # Batch size for training (RTX 4060 8GB - 使用较小batch)
+  batch_size: 2
+  # Number of epochs for training (数据量大，2个epoch足够演示)
+  num_epochs: 2
   # Number of workers for the DataLoader during training
-  #num_workers: 30
   num_workers: 4
   # Prefetch factor for the DataLoader during training
-  #prefetch_factor: 10
   prefetch_factor: 2
   # Directory for logging training information
-  log_dir: "c:/Users/86185/Desktop/NL2CAD/logs"
+  log_dir: "C:/Users/86185/Desktop/NL2CAD/repot"
   # Path to saved model checkpoint for Resuming Training (optional)
   checkpoint_path:  # Set to None if no checkpoint is available
   # Checkpoint interval
-  checkpoint_interval: 10
+  checkpoint_interval: 1
   # Curriculum learning epoch (set to 0 for no curriculum learning)
   curriculum_learning_epoch: 0
   
@@ -82,7 +78,7 @@ train:
 val:
   # Nucleus sampling probability for validation (set to 0 for greedy decoding)
   nucleus_prob: 0
-  val_batch: 5
+  val_batch: 3
 
 # ------------------------------ Debug mode flag ----------------------------- #
 # In debug mode, the model weights are not saved

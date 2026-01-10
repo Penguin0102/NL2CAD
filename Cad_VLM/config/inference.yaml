@@ -42,11 +42,11 @@ cad_decoder:
 # --------------- Configuration related to test dataloader --------------- #
 test_data:
   # Root directory of the test data
-  cad_seq_dir: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/cad_seq"
-  # Path to the CSV file containing the text prompts
-  prompt_path: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_data.pkl"
+  cad_seq_dir: "G:/text2cad-data/cad_seq/cad_seq"
+  # Path to the CSV file containing the text prompts  
+  prompt_path: "G:/text2cad-data/validation_data.pkl"
   # JSON file containing information about train, test, and validation splits
-  split_filepath: "c:/Users/86185/Desktop/NL2CAD/Cad_VLM/dummy_data/train_val_test_split.json"
+  split_filepath: "G:/text2cad-data/train_val_test_split.json"
   # Maximum sequence length for input data
   max_seq_len: 512
 
@@ -59,7 +59,7 @@ test:
   # Prefetch factor for the DataLoader during testing
   prefetch_factor: 2
   # Directory for logging test information
-  log_dir: "c:/Users/86185/Desktop/NL2CAD/logs"
+  log_dir: "C:/Users/86185/Desktop/NL2CAD/repot"
   # Path to saved model checkpoint for testing
   checkpoint_path:  # Will be set by the evaluation script
   # Sampling type: "max" for greedy decoding, "topk" for top-k sampling

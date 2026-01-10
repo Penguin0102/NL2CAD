@@ -1,0 +1,38 @@
+cad_decoder:
+  ca_level_start: 2
+  cad_seq_len: 272
+  cdim: 256
+  dropout: 0.1
+  num_heads: 8
+  num_layers: 8
+  tdim: 1024
+debug: false
+info: 'Experiment 1: Base Model Training'
+text_encoder:
+  adaptive_layer:
+    dropout: 0.1
+    in_dim: 1024
+    num_heads: 8
+    out_dim: 1024
+  text_embedder:
+    cache_dir: c:/Users/86185/Desktop/NL2CAD/cache
+    max_seq_len: 512
+    model_name: bert_large_uncased
+train:
+  batch_size: 2
+  checkpoint_interval: 1
+  checkpoint_path: null
+  curriculum_learning_epoch: 0
+  log_dir: C:/Users/86185/Desktop/NL2CAD/repot
+  lr: 0.0001
+  num_epochs: 3
+  num_workers: 4
+  prefetch_factor: 2
+train_data:
+  cad_seq_dir: G:/text2cad-data/cad_seq/cad_seq
+  max_seq_len: 512
+  prompt_path: G:/text2cad-data/train_data.pkl
+  split_filepath: G:/text2cad-data/train_val_test_split.json
+val:
+  nucleus_prob: 0
+  val_batch: 3

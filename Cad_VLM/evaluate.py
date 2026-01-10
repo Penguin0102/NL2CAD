@@ -47,7 +47,7 @@ logger = CLGLogger().configure_logger(verbose=True).logger
 
 
 def parse_config_file(config_file):
-    with open(config_file, "r") as file:
+    with open(config_file, "r", encoding="utf-8") as file:
         yaml_data = yaml.safe_load(file)
     return yaml_data
 

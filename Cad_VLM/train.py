@@ -46,7 +46,7 @@ t2clogger = CLGLogger().configure_logger(verbose=True).logger
 
 
 def parse_config_file(config_file):
-    with open(config_file, "r") as file:
+    with open(config_file, "r", encoding="utf-8") as file:
         yaml_data = yaml.safe_load(file)
     return yaml_data
 
@@ -280,7 +280,30 @@ def train_model(
                     :, :-1
                 ]
                 # Attention mask for input Cad Sequence
-                mask_cad_dict["attn_mask"] = mask_cad_dict["attn_mask"][:, :-1, :-1]
+                # Get the input sequence length after removing last token
+                input_seq_len = vec_dict["cad_vec"].shape[1]
+                
+                # Regenerate attn_mask with correct size if needed
+                attn_mask = mask_cad_dict["attn_mask"]
+                if attn_mask.dim() == 2:
+                    # 2D mask without batch dimension
+                    if attn_mask.shape[0] != input_seq_len:
+                        attn_mask = torch.triu(
+                            torch.ones(input_seq_len, input_seq_len, dtype=torch.bool, device=device),
+                            diagonal=1
+                        )
+                    else:
+                        attn_mask = attn_mask[:-1, :-1] if attn_mask.shape[0] > input_seq_len else attn_mask
+                else:
+                    # 3D mask with batch dimension
+                    if attn_mask.shape[1] != input_seq_len:
+                        attn_mask = torch.triu(
+                            torch.ones(input_seq_len, input_seq_len, dtype=torch.bool, device=device),
+                            diagonal=1
+                        )
+                    else:
+                        attn_mask = attn_mask[:, :-1, :-1] if attn_mask.shape[1] > input_seq_len else attn_mask
+                mask_cad_dict["attn_mask"] = attn_mask
 
                 # Output from the model
                 cad_vec_pred, _ = model(

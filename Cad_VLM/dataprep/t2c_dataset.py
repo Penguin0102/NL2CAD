@@ -129,23 +129,39 @@ class Text2CAD_Dataset(Dataset):
             
         # Generate flag_vec and index_vec using CADSequence
         try:
-            cad_seq_obj = CADSequence.from_vec(cad_vec_dict["vec"], denumericalize=False)
-            cad_seq_obj.to_vec(padding=True, max_cad_seq_len=MAX_CAD_SEQUENCE_LENGTH)
-            
-            vec_dict = {
-                "cad_vec": cad_seq_obj.cad_vec,
-                "flag_vec": cad_seq_obj.flag_vec,
-                "index_vec": cad_seq_obj.index_vec,
-            }
+            # Check if vec is already a dict with processed data
+            if isinstance(cad_vec_dict["vec"], dict):
+                vec_dict = cad_vec_dict["vec"]
+            else:
+                cad_seq_obj = CADSequence.from_vec(cad_vec_dict["vec"], denumericalize=False)
+                cad_seq_obj.to_vec(padding=True, max_cad_seq_len=MAX_CAD_SEQUENCE_LENGTH)
+                
+                vec_dict = {
+                    "cad_vec": cad_seq_obj.cad_vec,
+                    "flag_vec": cad_seq_obj.flag_vec,
+                    "index_vec": cad_seq_obj.index_vec,
+                }
         except Exception as e:
             # Fallback if CADSequence fails
-            vec_dict = {
-                "cad_vec": cad_vec_dict["vec"],
-                "flag_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
-                "index_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
-            }
+            if isinstance(cad_vec_dict["vec"], dict):
+                vec_dict = cad_vec_dict["vec"]
+            else:
+                vec_dict = {
+                    "cad_vec": cad_vec_dict["vec"],
+                    "flag_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
+                    "index_vec": torch.zeros(cad_vec_dict["vec"].shape[0], dtype=torch.int32),
+                }
 
-        return uid, vec_dict, level_data, cad_vec_dict["mask_cad_dict"]
+        # Fix attn_mask dimension if needed
+        mask_cad_dict = cad_vec_dict["mask_cad_dict"]
+        seq_len = vec_dict["cad_vec"].shape[0]
+        if mask_cad_dict["attn_mask"].shape[0] != seq_len:
+            # Regenerate attn_mask with correct size
+            mask_cad_dict["attn_mask"] = torch.triu(
+                torch.ones(seq_len, seq_len, dtype=torch.bool), diagonal=1
+            )
+        
+        return uid, vec_dict, level_data, mask_cad_dict
 
     def remove_substrings(self, text, substrings):
         """
