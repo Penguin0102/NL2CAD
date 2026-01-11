@@ -82,46 +82,6 @@ def genrate_cad_model_from_text(text):
         raise Exception("Error generating CAD model from text")
 
 
-# examples = [
-#     "A ring.",
-#     "A rectangular prism.",
-#     "A 3D star shape with 5 points.",
-#     "The CAD model features a cylindrical object with a cylindrical hole in the center.",
-#     "The CAD model features a rectangular metal plate with four holes along its length."
-# ]
-
-# title = "Text2CAD: Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts"
-# description = """
-# Generate 3D CAD models from text prompts of varying complexity, from beginner-level descriptions to expert-level specifications.
-
-# <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
-
-# <a href="https://arxiv.org/abs/2409.17106">
-#   <img src="https://img.shields.io/badge/Arxiv-3498db?style=for-the-badge&logoWidth=40&logoColor=white&labelColor=2c3e50&borderRadius=10" alt="Arxiv" />
-# </a>
-# <a href="https://sadilkhan.github.io/text2cad-project/">
-#   <img src="https://img.shields.io/badge/Project-2ecc71?style=for-the-badge&logoWidth=40&logoColor=white&labelColor=27ae60&borderRadius=10" alt="Project" />
-# </a>
-# <a href="https://huggingface.co/datasets/SadilKhan/Text2CAD">
-#   <img src="https://img.shields.io/badge/Dataset-7D5BA6?style=for-the-badge&logoWidth=40&logoColor=white&labelColor=27ae60&borderRadius=10" alt="Dataset" />
-# </a>
-
-# </div>
-# """
-
-# # Create the Gradio interface
-# demo = gr.Interface(
-#     fn=genrate_cad_model_from_text,
-#     inputs=gr.Textbox(label="Text", placeholder="Enter a text prompt here"),
-#     outputs=gr.Model3D(clear_color=[0.678, 0.847, 0.902, 1.0], label="3D CAD Model"),
-#     examples=examples,
-#     title=title,
-#     description=description,
-#     theme=gr.themes.Soft(), 
-# )
-
-# if __name__ == "__main__":
-#     demo.launch(share=True)
 
 examples = [
     "A ring.",
