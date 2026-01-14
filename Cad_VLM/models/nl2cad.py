@@ -11,7 +11,7 @@ from Cad_VLM.models.utils import count_parameters
 
 
 
-class Text2CAD(nn.Module):
+class NL2CAD(nn.Module):
     """
     NL2CAD: Generating CAD Designs from beginner-to-expert text prompts
 

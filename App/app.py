@@ -4,7 +4,7 @@ import zipfile
 sys.path.append("..")
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-1]))
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-2]))
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import NL2CAD
 from CadSeqProc.utility.macro import MAX_CAD_SEQUENCE_LENGTH, N_BIT
 from CadSeqProc.cad_sequence import CADSequence
 import gradio as gr
@@ -16,7 +16,7 @@ def load_model(config, device):
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    text2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -31,9 +31,9 @@ def load_model(config, device):
             else:
                 pretrained_dict[key] = value
 
-        text2cad.load_state_dict(pretrained_dict, strict=False)
-    text2cad.eval()
-    return text2cad
+        nl2cad.load_state_dict(pretrained_dict, strict=False)
+    nl2cad.eval()
+    return nl2cad
 
 def test_model(model, text, config, device):
     
@@ -220,8 +220,8 @@ body, .gradio-container {
     transition: all 0.2s ease !important;
     margin-top: 0.5rem !important;
     border-radius: 10px !important;
-    height: 52px !important;
-    font-size: 1rem !important;
+    height: 40px !important;
+    font-size: 0.9rem !important;
 }
 
 .synthesize-btn:hover {
@@ -318,7 +318,7 @@ footer { display: none !important; }
 def _wrapped_generate(text):
     try:
         stl_path, zip_path = genrate_cad_model_from_text(text)
-        return stl_path, f"✅ Generated: {text}", zip_path
+        return stl_path, "Generated Success", zip_path
     except Exception as e:
         return None, f"❌ Error: {str(e)}", None
 
@@ -329,7 +329,6 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
             gr.HTML(
                 """
                 <div class="nl2cad-title">NL2<span>CAD</span></div>
-                <div class="design-prompt-label">Configuration</div>
                 """
             )
             
@@ -347,7 +346,7 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
             status_md = gr.Markdown("Ready to synthesize.", elem_id="status-text")
             
             with gr.Column(elem_classes="recent-templates-section"):
-                gr.HTML("<div class=\"design-prompt-label\">Recent Templates</div>")
+                gr.HTML("<div class=\"design-prompt-label\">Examples</div>")
                 with gr.Column(elem_classes="templates-grid"):
                     template_1 = gr.Button("A ring", elem_classes="template-tag")
                     template_2 = gr.Button("A 3D star shape with 5 points", elem_classes="template-tag")
@@ -383,4 +382,4 @@ with gr.Blocks(css=custom_css, title="NL2CAD") as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(share=True)
+    demo.launch(share=False)

@@ -10,11 +10,11 @@ import random
 import numpy as np
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import NL2CAD
 from Cad_VLM.models.loss import CELoss
 from Cad_VLM.models.metrics import AccuracyCalculator
 from Cad_VLM.models.utils import print_with_separator
-from Cad_VLM.dataprep.t2c_dataset import get_dataloaders
+from Cad_VLM.dataprep.nl2cad_dataset import get_dataloaders
 from loguru import logger
 import torch
 import argparse
@@ -38,7 +38,7 @@ logging.config.dictConfig(
     }
 )
 
-t2clogger = CLGLogger().configure_logger(verbose=True).logger
+nl2cadlogger = CLGLogger().configure_logger(verbose=True).logger
 
 # ---------------------------------------------------------------------------- #
 #                            NL2CAD Training Code                            #
@@ -70,7 +70,7 @@ def main():
     args = parser.parse_args()
     config = parse_config_file(args.config_path)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Device {}",
         torch.cuda.get_device_properties(device),
     )
@@ -78,7 +78,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    nl2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -108,7 +108,7 @@ def main():
         config["train"]["log_dir"],
         f"{date_str}/{time_str}_d{dim}_nl{nlayers}_ca{ca_level_start}",
     )
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Date {date_str} Time {time_str}\n",
         date_str=date_str,
         time_str=time_str,
@@ -192,9 +192,9 @@ def train_model(
 
     tensorboard_dir = os.path.join(log_dir, f"summary")
     # ---------------------- Resume Training from checkpoint --------------------- #
-    checkpoint_file = os.path.join(log_dir, f"t2c_{checkpoint_name}.pth")
+    checkpoint_file = os.path.join(log_dir, f"nl2cad_{checkpoint_name}.pth")
     checkpoint_only_model_file = os.path.join(
-        log_dir, f"t2c_{checkpoint_name}_model.pth"
+        log_dir, f"nl2cad_{checkpoint_name}_model.pth"
     )
 
     if config["train"]["checkpoint_path"] is None:
@@ -203,7 +203,7 @@ def train_model(
         old_checkpoint_file = config["train"]["checkpoint_path"]
 
     if os.path.exists(old_checkpoint_file):
-        t2clogger.info("Using saved checkpoint at {}", old_checkpoint_file)
+        nl2cadlogger.info("Using saved checkpoint at {}", old_checkpoint_file)
         checkpoint = torch.load(old_checkpoint_file, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"], strict=False)
         if "optimizer_state_dict" in checkpoint:
@@ -213,7 +213,7 @@ def train_model(
     else:
         step = 0
         start_epoch = 1
-    t2clogger.info("Saving checkpoint at {}", checkpoint_file)
+    nl2cadlogger.info("Saving checkpoint at {}", checkpoint_file)
 
     # Create the tensorboard summary writer
     writer = SummaryWriter(log_dir=tensorboard_dir, comment=f"{checkpoint_name}")
@@ -224,10 +224,10 @@ def train_model(
 
     # ---------------------------------- Training ---------------------------------- #
     if start_epoch > config["train"]["curriculum_learning_epoch"]:
-        t2clogger.warning("MIXED LEARNING...")
+        nl2cadlogger.warning("MIXED LEARNING...")
         random.shuffle(train_loader.dataset.uid_pair)
     else:
-        t2clogger.info("CURRICULUM LEARNING...")
+        nl2cadlogger.info("CURRICULUM LEARNING...")
 
     # model=torch.compile(model)
     # Start training
@@ -236,7 +236,7 @@ def train_model(
         # ------------------------------- Single Epoch ------------------------------- #
         # Shuffle the data when curriculum learning stops
         if epoch == config["train"]["curriculum_learning_epoch"]:
-            t2clogger.info("MIXED LEARNING...")
+            nl2cadlogger.info("MIXED LEARNING...")
             optimizer = optim.AdamW(model.parameters(), lr=config["train"]["lr"])
             scheduler = ExponentialLR(optimizer, gamma=0.99)
 
@@ -395,7 +395,7 @@ def train_model(
 
                 # Save only the model weights
                 checkpoint_only_model_file = os.path.join(
-                    log_dir, f"t2c_{checkpoint_name}_{epoch}_model.pth"
+                    log_dir, f"nl2cad_{checkpoint_name}_{epoch}_model.pth"
                 )
                 # torch.save(
                 #     {
@@ -453,7 +453,7 @@ def train_model(
         history_path = os.path.join(log_dir, "training_history.json")
         with open(history_path, "w", encoding="utf-8") as f:
             json.dump(training_history, f, indent=4, ensure_ascii=False)
-        t2clogger.info(f"Training history saved to {history_path}")
+        nl2cadlogger.info(f"Training history saved to {history_path}")
         
         # 生成训练摘要报告
         summary_report = {
@@ -475,9 +475,9 @@ def train_model(
         summary_path = os.path.join(log_dir, "training_summary.json")
         with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(summary_report, f, indent=4, ensure_ascii=False)
-        t2clogger.info(f"Training summary saved to {summary_path}")
+        nl2cadlogger.info(f"Training summary saved to {summary_path}")
     
-    t2clogger.success("Training Finished.")
+    nl2cadlogger.success("Training Finished.")
 
 
 def validation_one_epoch(

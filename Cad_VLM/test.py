@@ -10,9 +10,9 @@ from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.utils import chamfer_dist, normalize_pc
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import NL2CAD
 from Cad_VLM.models.utils import print_with_separator
-from Cad_VLM.dataprep.t2c_dataset import get_dataloaders
+from Cad_VLM.dataprep.nl2cad_dataset import get_dataloaders
 from loguru import logger
 from rich import print
 import torch
@@ -34,7 +34,7 @@ logging.config.dictConfig(
     }
 )
 
-t2clogger = CLGLogger().configure_logger(verbose=True).logger
+nl2cadlogger = CLGLogger().configure_logger(verbose=True).logger
 
 # ---------------------------------------------------------------------------- #
 #                              NL2CAD Test Code                              #
@@ -66,7 +66,7 @@ def main():
     args = parser.parse_args()
     config = parse_config_file(args.config_path)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Device {}",
         torch.cuda.get_device_properties(device),
     )
@@ -74,7 +74,7 @@ def main():
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    nl2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -90,7 +90,7 @@ def main():
         config["test"]["log_dir"],
         f"{date_str}/{time_str}_d{dim}_nl{nlayers}_ca{ca_level_start}",
     )
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Date {date_str} Time {time_str}\n",
         date_str=date_str,
         time_str=time_str,
@@ -111,7 +111,7 @@ def main():
         device=device,
         log_dir=log_dir,
         config=config,
-        logger=t2clogger,
+        logger=nl2cadlogger,
     )
 
 

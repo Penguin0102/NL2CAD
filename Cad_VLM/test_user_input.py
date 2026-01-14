@@ -31,7 +31,7 @@ logging.config.dictConfig(
     }
 )
 
-t2clogger = CLGLogger().configure_logger(verbose=True).logger
+nl2cadlogger = CLGLogger().configure_logger(verbose=True).logger
 
 # ---------------------------------------------------------------------------- #
 #                    Generate CAD Sequence from User Inputs                    #
@@ -66,7 +66,7 @@ def main():
 
     config = parse_config_file(args.config_path)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Device {}",
         torch.cuda.get_device_properties(device),
     )
@@ -90,7 +90,7 @@ def main():
         config["test"]["log_dir"],
         f"{date_str}/{time_str}_d{dim}_nl{nlayers}_ca{ca_level_start}",
     )
-    t2clogger.info(
+    nl2cadlogger.info(
         "Current Date {date_str} Time {time_str}\n",
         date_str=date_str,
         time_str=time_str,
@@ -152,7 +152,7 @@ def test_model(
                 pretrained_dict[key] = value
         if "epoch" in checkpoint:
             epoch = checkpoint["epoch"]
-            t2clogger.info(f"Model was trained for epoch {epoch}.")
+            nl2cadlogger.info(f"Model was trained for epoch {epoch}.")
 
         model.load_state_dict(pretrained_dict, strict=False)
 
@@ -169,7 +169,7 @@ def test_model(
         text = text_prompt(config["test"]["prompt_file"])
     else:
         text = [prompt]
-        t2clogger.info(f"Using the user input text prompt.")
+        nl2cadlogger.info(f"Using the user input text prompt.")
 
     num_texts = len(text)
     if num_texts == 0:
@@ -177,12 +177,12 @@ def test_model(
             f'No text found in the prompt file 😥. Please check the prompt file in {config["test"]["prompt_file"]} 🔍.'
         )
     else:
-        t2clogger.info(f"Found {num_texts} prompts in the prompt file.")
+        nl2cadlogger.info(f"Found {num_texts} prompts in the prompt file.")
 
     model.eval()
     batch_size=min(config["test"]["batch_size"], num_texts)
     with torch.no_grad():
-        t2clogger.info("Generating CAD Sequence.")
+        nl2cadlogger.info("Generating CAD Sequence.")
         for b in range(num_texts // batch_size):
             # Autoregressive Generation of CAD Sequences from Text Prompts
             pred_cad_seq_dict = model.test_decode(
@@ -226,7 +226,7 @@ def test_model(
     with open(log_dir + "/output.pkl", "wb") as f:
         pickle.dump(test_acc_uid, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    t2clogger.info(f"Cad Sequence Generation Complete. Results are saved in {log_dir}.")
+    nl2cadlogger.info(f"Cad Sequence Generation Complete. Results are saved in {log_dir}.")
 
 
 if __name__ == "__main__":

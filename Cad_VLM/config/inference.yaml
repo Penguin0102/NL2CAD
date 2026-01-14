@@ -42,11 +42,11 @@ cad_decoder:
 # --------------- Configuration related to test dataloader --------------- #
 test_data:
   # Root directory of the test data
-  cad_seq_dir: "G:/text2cad-data/cad_seq/cad_seq"
+  cad_seq_dir: "G:/nl2cad-data/cad_seq/cad_seq"
   # Path to the CSV file containing the text prompts  
-  prompt_path: "G:/text2cad-data/validation_data.pkl"
+  prompt_path: "G:/nl2cad-data/validation_data.pkl"
   # JSON file containing information about train, test, and validation splits
-  split_filepath: "G:/text2cad-data/train_val_test_split.json"
+  split_filepath: "G:/nl2cad-data/train_val_test_split.json"
   # Maximum sequence length for input data
   max_seq_len: 512
 

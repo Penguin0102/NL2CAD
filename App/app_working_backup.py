@@ -3,7 +3,7 @@ import os, sys
 sys.path.append("..")
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-1]))
 sys.path.append("/".join(os.path.abspath(__file__).split("/")[:-2]))
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import NL2CAD
 from CadSeqProc.utility.macro import MAX_CAD_SEQUENCE_LENGTH, N_BIT
 from CadSeqProc.cad_sequence import CADSequence
 import gradio as gr
@@ -15,7 +15,7 @@ def load_model(config, device):
     # -------------------------------- Load Model -------------------------------- #
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    text2cad = Text2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
+    nl2cad = NL2CAD(text_config=config["text_encoder"], cad_config=cad_config).to(
         device
     )
 
@@ -30,9 +30,9 @@ def load_model(config, device):
             else:
                 pretrained_dict[key] = value
 
-        text2cad.load_state_dict(pretrained_dict, strict=False)
-    text2cad.eval()
-    return text2cad
+        nl2cad.load_state_dict(pretrained_dict, strict=False)
+    nl2cad.eval()
+    return nl2cad
 
 def test_model(model, text, config, device):
     
@@ -91,7 +91,7 @@ examples = [
     "The CAD model features a rectangular metal plate with four holes along its length.",
 ]
 
-title = "Text2CAD: Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts"
+title = "NL2CAD: Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts"
 
 description = """
 Generate 3D CAD models from text prompts of varying complexity, from beginner-level descriptions to expert-level specifications.
@@ -111,12 +111,12 @@ body {
     padding-top: 1.5rem !important;
 }
 
-#text2cad-header {
+#nl2cad-header {
     text-align: center;
     padding: 1rem 0 1.5rem 0;
 }
 
-#text2cad-header h1 {
+#nl2cad-header h1 {
     font-size: 2.1rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -126,14 +126,14 @@ body {
     margin-bottom: 0.3rem;
 }
 
-#text2cad-header p {
+#nl2cad-header p {
     font-size: 0.95rem;
     color: #9ca3af;
     max-width: 720px;
     margin: 0.2rem auto 0;
 }
 
-.text2cad-card {
+.nl2cad-card {
     background: rgba(15, 23, 42, 0.9);
     border-radius: 16px;
     border: 1px solid rgba(148, 163, 184, 0.2);
@@ -141,12 +141,12 @@ body {
     padding: 1.2rem;
 }
 
-.text2cad-label {
+.nl2cad-label {
     font-weight: 600 !important;
     color: #e5e7eb !important;
 }
 
-.text2cad-footer {
+.nl2cad-footer {
     text-align: center;
     font-size: 0.8rem;
     color: #6b7280;
@@ -154,7 +154,7 @@ body {
 }
 
 /* 按钮高亮 */
-button.primary, button.svelte-1ipelgc, .text2cad-generate-btn button {
+button.primary, button.svelte-1ipelgc, .nl2cad-generate-btn button {
     background: linear-gradient(90deg, #22c55e, #06b6d4);
     color: #0f172a !important;
     border-radius: 9999px !important;
@@ -164,13 +164,13 @@ button.primary, button.svelte-1ipelgc, .text2cad-generate-btn button {
 }
 
 button.primary:hover,
-.text2cad-generate-btn button:hover {
+.nl2cad-generate-btn button:hover {
     filter: brightness(1.05);
     transform: translateY(-1px);
 }
 
 /* 3D 模型区域边框 */
-.text2cad-model3d .wrap {
+.nl2cad-model3d .wrap {
     border-radius: 14px !important;
     border: 1px solid rgba(148, 163, 184, 0.35) !important;
     overflow: hidden;
@@ -188,7 +188,7 @@ def _wrapped_generate(text):
 with gr.Blocks(css=custom_css) as demo:
     gr.HTML(
         """
-        <div id="text2cad-header">
+        <div id="nl2cad-header">
             <h1>基于文本的 3D CAD 生成 Demo</h1>
             <p>
                 这是我们自主实验的演示页面：输入一段自然语言描述，系统会自动生成对应的 3D CAD 模型。
@@ -201,18 +201,18 @@ with gr.Blocks(css=custom_css) as demo:
     with gr.Row():
         # 左侧：输入 + 示例
         with gr.Column(scale=5):
-            with gr.Group(elem_classes="text2cad-card"):
+            with gr.Group(elem_classes="nl2cad-card"):
                 input_text = gr.Textbox(
                     label="Text Prompt",
                     placeholder="Describe the CAD shape you want to generate...",
                     lines=4,
-                    elem_classes="text2cad-label",
+                    elem_classes="nl2cad-label",
                 )
-                with gr.Row(elem_classes="text2cad-generate-btn"):
+                with gr.Row(elem_classes="nl2cad-generate-btn"):
                     generate_btn = gr.Button("Generate CAD Model", scale=3)
                 status_md = gr.Markdown("👈 Enter a prompt on the left and click **Generate**.")
 
-            gr.Markdown("**Examples**", elem_classes="text2cad-label")
+            gr.Markdown("**Examples**", elem_classes="nl2cad-label")
 
             # 这里删除 elem_classes 参数，保持老版本 gradio 兼容
             gr.Examples(
@@ -222,7 +222,7 @@ with gr.Blocks(css=custom_css) as demo:
 
         # 右侧：3D 查看器
         with gr.Column(scale=7):
-            with gr.Group(elem_classes="text2cad-card text2cad-model3d"):
+            with gr.Group(elem_classes="nl2cad-card nl2cad-model3d"):
                 output_model = gr.Model3D(
                     label="Generated 3D CAD Model",
                     # R, G, B, A  0~1 之间，下面是很浅的蓝白背景

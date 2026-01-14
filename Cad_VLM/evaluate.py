@@ -39,9 +39,9 @@ from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import *
 from CadSeqProc.utility.utils import chamfer_dist, normalize_pc, ensure_dir
 from CadSeqProc.utility.logger import CLGLogger
-from Cad_VLM.models.text2cad import Text2CAD
+from Cad_VLM.models.nl2cad import NL2CAD
 from Cad_VLM.models.metrics import AccuracyCalculator
-from Cad_VLM.dataprep.t2c_dataset import get_dataloaders
+from Cad_VLM.dataprep.nl2cad_dataset import get_dataloaders
 
 logger = CLGLogger().configure_logger(verbose=True).logger
 
@@ -446,7 +446,7 @@ def main():
     # 加载模型
     cad_config = config["cad_decoder"]
     cad_config["cad_seq_len"] = MAX_CAD_SEQUENCE_LENGTH
-    model = Text2CAD(
+    model = NL2CAD(
         text_config=config["text_encoder"],
         cad_config=cad_config
     ).to(device)

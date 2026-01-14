@@ -10,7 +10,7 @@ import pickle
 from CadSeqProc.cad_sequence import CADSequence
 from CadSeqProc.utility.macro import MAX_CAD_SEQUENCE_LENGTH
 
-class Text2CAD_Dataset(Dataset):
+class NL2CAD_Dataset(Dataset):
     def __init__(
         self,
         cad_seq_dir: str,
@@ -27,7 +27,7 @@ class Text2CAD_Dataset(Dataset):
             split_filepath (string): Train_Test_Val json file path.
             subset (string): "train", "test" or "val"
         """
-        super(Text2CAD_Dataset, self).__init__()
+        super(NL2CAD_Dataset, self).__init__()
         self.cad_seq_dir = cad_seq_dir
         self.prompt_path = prompt_path
         self.all_prompt_choices = ["abstract", "beginner", "intermediate", "expert"]
@@ -243,7 +243,7 @@ def get_dataloaders(
 
     for subset in subsets:
         # Create an instance of the NL2CADDataset
-        dataset = Text2CAD_Dataset(
+        dataset = NL2CAD_Dataset(
             cad_seq_dir=cad_seq_dir,
             prompt_path=prompt_path,
             split_filepath=split_filepath,
